@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --warm-bg: #fdf6f0;
+  --warm-text: #4a3728;
+}
+
+body {
+  background-color: var(--warm-bg);
+  color: var(--warm-text);
+}
