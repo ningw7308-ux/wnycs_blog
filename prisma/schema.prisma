@@ -24,8 +24,9 @@ model Post {
   id        String    @id @default(cuid())
   title     String
   content   String
+  excerpt   String    @default("")
   slug      String    @unique
-  published Boolean   @default(false)
+  published Boolean   @default(true)
   anonymous Boolean   @default(false)
   authorId  String
   author    User      @relation(fields: [authorId], references: [id])

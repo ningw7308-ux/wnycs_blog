@@ -2,7 +2,7 @@ import Link from "next/link";
 
 interface PostCardProps {
   title: string;
-  summary: string;
+  excerpt: string;
   author: string;
   createdAt: string;
   likeCount: number;
@@ -11,11 +11,12 @@ interface PostCardProps {
 
 /**
  * PostCard 组件
- * 文章卡片，展示标题、摘要、作者、发布时间、温暖值（点赞数）。
+ * 文章卡片，展示标题、摘要（excerpt）、作者、发布时间、温暖值（点赞数）。
+ * 用于文章列表页和个人主页。
  */
 export default function PostCard({
   title,
-  summary,
+  excerpt,
   author,
   createdAt,
   likeCount,
@@ -27,7 +28,7 @@ export default function PostCard({
         <h2 className="text-lg font-semibold text-warm-800 mb-2 line-clamp-1">
           {title}
         </h2>
-        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{summary}</p>
+        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{excerpt}</p>
 
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center gap-3">
