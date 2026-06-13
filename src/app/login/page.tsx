@@ -4,12 +4,14 @@ import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 
 /**
  * 登录表单校验规则
+ * - email: 必须是合法邮箱格式
+ * - password: 至少 6 个字符
  */
 const loginSchema = z.object({
   email: z.string().email("请输入有效的邮箱地址"),
@@ -19,13 +21,16 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 /**
- * 登录页面
- * 使用 Auth.js v5 的 Credentials 提供者进行邮箱+密码登录。
- * 登录成功后跳转到首页。
+ * 登录表单组件（实际内容）
  */
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState("");
+
+  // 从 URL 中获取 callbackUrl（中间件重定向时附带），默认跳转到 /posts
+  const callbackUrl = searchParams.get("callbackUrl") || "/posts";
+
   const {
     register,
     handleSubmit,
@@ -36,18 +41,23 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setError("");
+
+    // 调用 Auth.js 的 signIn("credentials", ...) 登录
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
-      redirect: false,
+      redirect: false, // 手动控制跳转，以便处理错误
     });
 
     if (result?.error) {
+      // 显示错误信息（密码错误、用户不存在等）
       setError("邮箱或密码错误");
-    } else {
-      router.push("/");
-      router.refresh();
+      return;
     }
+
+    // 登录成功：跳转到 callbackUrl（或默认 /posts）
+    router.push(callbackUrl);
+    router.refresh();
   };
 
   return (
@@ -57,6 +67,7 @@ export default function LoginPage() {
           登录温暖空间
         </h1>
 
+        {/* 错误提示 */}
         {error && (
           <p className="text-red-500 text-sm text-center mb-4 bg-red-50 py-2 rounded">
             {error}
@@ -64,6 +75,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* 邮箱 */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
               邮箱
@@ -79,6 +91,7 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* 密码 */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
               密码
@@ -96,6 +109,7 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* 提交按钮（显示加载状态） */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -113,5 +127,24 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * 登录页面
+ * 使用 Suspense 包裹，因为 useSearchParams 需要。
+ * 认证流程：
+ * 1. 用户输入邮箱 + 密码
+ * 2. 调用 signIn("credentials", ...)
+ * 3. NextAuth 触发 auth.ts 中的 authorize 函数
+ * 4. authorize 查询数据库比对密码
+ * 5. 成功 → 生成 JWT → 写入 cookie → 跳转回 callbackUrl
+ * 6. 失败 → 返回 null → 显示错误信息
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

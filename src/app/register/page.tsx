@@ -27,7 +27,11 @@ type RegisterForm = z.infer<typeof registerSchema>;
 /**
  * 注册页面
  * 用户填写昵称、邮箱、密码完成注册。
- * TODO: 接入后端 API 完成实际注册逻辑。
+ * 认证流程：
+ * 1. 前端 react-hook-form + zod 校验表单（邮箱格式、密码长度、确认密码一致）
+ * 2. 提交调用 POST /api/register
+ * 3. 后端检查邮箱唯一性 → bcrypt 加密密码 → prisma.user.create 存入
+ * 4. 成功后自动跳转到 /login
  */
 export default function RegisterPage() {
   const router = useRouter();

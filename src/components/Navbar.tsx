@@ -6,8 +6,11 @@ import { useSession, signOut } from "next-auth/react";
 
 /**
  * Navbar 导航栏组件
+ * - 未登录：显示 "登录" 和 "注册" 按钮
  * - 已登录：显示 "写文章"、"个人"、"退出"
- * - 未登录：显示 "登录"
+ *
+ * 认证状态通过 useSession() 获取，
+ * 该 hook 依赖 layout.tsx 中的 <Providers> 包裹。
  */
 export default function Navbar() {
   const pathname = usePathname();
@@ -44,9 +47,9 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {/* 加载中不显示按钮 */}
+          {/* 认证状态区域：加载时不显示，避免闪烁 */}
           {isLoading ? null : session ? (
-            /* 已登录状态 */
+            /* ───── 已登录状态 ───── */
             <>
               <Link
                 href="/new-post"
@@ -76,13 +79,21 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            /* 未登录状态 */
-            <Link
-              href="/login"
-              className="text-sm bg-warm-500 hover:bg-warm-600 text-white px-4 py-1.5 rounded-full transition-colors"
-            >
-              登录
-            </Link>
+            /* ───── 未登录状态 ───── */
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-gray-500 hover:text-warm-500 transition-colors"
+              >
+                登录
+              </Link>
+              <Link
+                href="/register"
+                className="text-sm bg-warm-500 hover:bg-warm-600 text-white px-4 py-1.5 rounded-full transition-colors"
+              >
+                注册
+              </Link>
+            </>
           )}
         </nav>
       </div>
