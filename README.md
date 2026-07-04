@@ -1,29 +1,35 @@
-# 温暖空间 (warmspace)
+# 个人博客_wnycs_blog
 
-一个温暖的心理互助博客平台，分享治愈故事与心灵感悟。
+仰春氏的个人博客。记录学习、思考与探索的过程。
+
+## 视觉风格
+
+- 衬线标题字体 Cormorant Garamond，正文 Inter
+- 暗大理石背景 + 半透明米白卡片
+- 强调色：暗红 `#8B0000` / 古铜绿 `#5F7D6B`
+- 日期格式 `YYYY·MM·DD`，分隔线暗红细线，留白慷慨
 
 ## 技术栈
 
-- **前端**: Next.js 14 (App Router) + TypeScript + Tailwind CSS
-- **后端**: Next.js API Routes
-- **数据库**: PostgreSQL (生产) / SQLite (本地开发)
-- **认证**: NextAuth.js v5
-- **ORM**: Prisma
+| 层级 | 技术 |
+|------|------|
+| 框架 | Next.js 14 (App Router) |
+| 语言 | TypeScript |
+| 样式 | Tailwind CSS + 自定义配色 |
+| 字体 | next/font (Cormorant Garamond) |
+| 认证 | NextAuth.js v5 (JWT + Credentials) |
+| 数据库 | PostgreSQL (Prisma ORM) |
+| 内容 | react-markdown + remark-gfm |
+| 日志 | pino (Node.js) / console (Edge 回退) |
+| 部署 | Docker Compose |
 
 ## 本地开发
 
 ```bash
-# 安装依赖
 npm install
-
-# 配置环境变量（本地开发使用 SQLite）
 cp .env.example .env
-# 编辑 .env，设置 DATABASE_URL="file:./dev.db"
-
-# 初始化数据库
+npx prisma generate
 npx prisma db push
-
-# 启动开发服务器
 npm run dev
 ```
 
@@ -31,66 +37,53 @@ npm run dev
 
 ## Docker 部署
 
-### 前置条件
-
-- 安装 [Docker](https://docs.docker.com/get-docker/) 和 Docker Compose
-
-### 快速启动
-
 ```bash
-# 克隆项目
-git clone <your-repo-url> warmspace
-cd warmspace
-
-# 启动全部服务（应用 + PostgreSQL）
+git clone https://github.com/ningw7308-ux/wnycs_blog.git
+cd wnycs_blog
 docker compose up -d
-```
-
-### 首次启动后初始化数据库
-
-```bash
-# 执行数据库迁移
 docker compose exec app npx prisma db push
 ```
 
-### 常用命令
-
-```bash
-# 查看日志
-docker compose logs -f app
-
-# 重启服务
-docker compose restart
-
-# 停止服务
-docker compose down
-
-# 停止并清除数据（谨慎！）
-docker compose down -v
-```
-
 访问 http://localhost:3000
-
-### 环境变量
-
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `DATABASE_URL` | PostgreSQL 连接串 | `postgresql://warmspace:warmspace@db:5432/warmspace` |
-| `NEXTAUTH_SECRET` | JWT 签名密钥 | 启动时自动生成 |
-| `NEXTAUTH_URL` | 站点 URL | `http://localhost:3000` |
 
 ## 项目结构
 
 ```
 src/
-├── app/            # App Router 页面 + API 路由
-│   ├── api/        # API 接口
-│   ├── posts/      # 文章页面
-│   ├── wall/       # 留言墙
-│   └── settings/   # 用户设置
-├── components/     # React 组件
-├── lib/            # 工具函数（logger, prisma, utils）
-└── auth.ts         # NextAuth.js 配置
+├── app/                    # 页面 + API 路由
+│   ├── page.tsx            # 首页：一句话 + 引言轮播 + 最新文章
+│   ├── about/              # 关于页：素描 + 个人介绍
+│   ├── posts/              # 文章列表 + 详情
+│   ├── login/              # 登录
+│   ├── register/           # 注册
+│   ├── new-post/           # 写文章
+│   ├── profile/            # 个人主页
+│   ├── settings/           # 设置
+│   ├── wall/               # 留言墙
+│   ├── quotes/             # 语录
+│   └── api/                # API 路由
+├── components/             # React 组件
+│   ├── Navbar.tsx          # 导航栏（首页/文章/关于/RSS）
+│   ├── PostCard.tsx        # 文章卡片
+│   ├── LikeButton.tsx      # 大拇指点赞
+│   ├── CommentSection.tsx  # 回应区
+│   ├── OnlineCounter.tsx   # 在线阅读人数
+│   ├── DeskPet.tsx         # 桌宠（默认开启，可隐藏）
+│   └── ...
+├── lib/
+│   ├── prisma.ts           # Prisma 单例
+│   ├── logger.ts           # 环境感知日志
+│   └── utils.ts            # slug 生成 + 摘要提取
+├── auth.ts                 # NextAuth 配置
+└── middleware.ts           # 认证中间件
 prisma/
-└── schema.prisma   # 数据库模型定义
+└── schema.prisma           # 数据模型
 ```
+
+## 环境变量
+
+| 变量 | 说明 | 示例 |
+|------|------|------|
+| `DATABASE_URL` | PostgreSQL 连接串 | `postgresql://user:pass@localhost:5432/db` |
+| `NEXTAUTH_SECRET` | JWT 签名密钥 | 随机长字符串 |
+| `NEXTAUTH_URL` | 站点地址 | `http://localhost:3000` |
