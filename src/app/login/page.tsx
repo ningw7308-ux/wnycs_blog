@@ -64,7 +64,7 @@ function LoginForm() {
     <div className="flex items-center justify-center min-h-[80vh] px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
         <h1 className="text-2xl font-bold text-center text-warm-800 mb-6">
-          登录温暖空间
+          登录以管理博客
         </h1>
 
         {/* 错误提示 */}

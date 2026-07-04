@@ -18,7 +18,7 @@ export default function NotFound() {
         href="/posts"
         className="bg-warm-500 hover:bg-warm-600 text-white px-6 py-2 rounded-full transition-colors"
       >
-        返回心光记录
+        返回
       </Link>
     </div>
   );

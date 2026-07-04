@@ -2,12 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --warm-bg: #fdf6f0;
-  --warm-text: #4a3728;
+/* ─── 自定义光标（点击闪现 ✦） ─── */
+@layer base {
+  * {
+    cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><text y='18' font-size='16'>✦</text></svg>") 12 12, auto;
+  }
 }
 
+/* ─── 全局背景 ─── */
 body {
-  background-color: var(--warm-bg);
-  color: var(--warm-text);
+  background-image: url("https://images.unsplash.com/photo-1714687399299-65bb774aa061?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&dl=nicholas-martinelli-dN20r1kO7vA-unsplash.jpg");
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  color: #ffffff;
+}
+
+/* 暗色遮罩层 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 移动端遮罩加重 */
+@media (max-width: 767px) {
+  body::before {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ─── 全局卡片样式（半透明米白） ─── */
+@layer components {
+  .card {
+    @apply bg-stone-50/90 backdrop-blur-sm rounded-sm border border-stone-200/60 shadow-sm;
+  }
+  .card-dark {
+    @apply dark:bg-gray-900/80 dark:border-gray-700/50;
+  }
+}
+
+/* ─── 全局留白加大 ─── */
+@layer base {
+  section + section {
+    margin-top: 2.5rem;
+  }
+}
+
+/* ─── 输入框和评论区聚焦样式 ─── */
+@layer base {
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply border-roman-red-700 ring-1 ring-roman-red-700/30;
+  }
+}
+
+/* ─── 滚动条 ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #8B000033;
+  border-radius: 3px;
+}
+
+/* 强制全局文字白色 */
+body, p, h1, h2, h3, h4, h5, h6, span, a, li, blockquote, figcaption {
+  color: #ffffff !important;
+}
+
+/* 如果你只想让主要内容区变白，可以限定在卡片内部 */
+.prose, .prose * {
+  color: #ffffff !important;
 }

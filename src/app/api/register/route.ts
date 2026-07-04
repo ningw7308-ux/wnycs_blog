@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import logger from "@/lib/logger";
 
 /**
  * POST /api/register
@@ -42,12 +43,14 @@ export async function POST(request: Request) {
       },
     });
 
+    logger.info({ userId: user.id, email }, "用户注册");
+
     return NextResponse.json(
       { message: "注册成功", userId: user.id },
       { status: 201 }
     );
   } catch (error) {
-    console.error("注册失败:", error);
+    logger.error({ err: error }, "注册失败");
     return NextResponse.json(
       { error: "注册失败，请稍后重试" },
       { status: 500 }

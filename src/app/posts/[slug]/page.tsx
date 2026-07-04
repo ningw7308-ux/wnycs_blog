@@ -1,131 +1,120 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import PostContentClient from "@/components/PostContentClient";
+import OnlineCounter from "@/components/OnlineCounter";
 
-/**
- * 文章详情页（/posts/[slug]）
- * 服务端组件，根据 slug 查找文章。
- * - 存在 → 渲染 Markdown 内容
- * - 不存在 → 404
- */
 export default async function PostDetailPage({
   params,
 }: {
   params: { slug: string };
 }) {
+  const session = await auth();
+
   const post = await prisma.post.findUnique({
     where: { slug: params.slug },
     include: {
-      author: {
-        select: { name: true, image: true },
-      },
-      _count: {
-        select: { likes: true, comments: true },
-      },
+      author: { select: { name: true, image: true } },
+      _count: { select: { likes: true, comments: true } },
     },
   });
 
-  // 文章不存在 → 404
-  if (!post) {
-    notFound();
+  if (!post) notFound();
+
+  let userLiked = false;
+  if (session?.user?.id) {
+    const existingLike = await prisma.like.findUnique({
+      where: { postId_userId: { postId: post.id, userId: session.user.id } },
+    });
+    userLiked = !!existingLike;
   }
 
+  const comments = await prisma.comment.findMany({
+    where: { postId: post.id },
+    orderBy: { createdAt: "asc" },
+    include: {
+      author: { select: { name: true } },
+      _count: { select: { commentLikes: true } },
+    },
+  });
+
+  const commentsWithLikes = comments.map((c) => ({
+    id: c.id,
+    content: c.content,
+    author: c.author,
+    createdAt: c.createdAt.toISOString(),
+    _count: { commentLikes: c._count.commentLikes },
+    userLiked: false,
+  }));
+
+  if (session?.user?.id) {
+    const commentIds = comments.map((c) => c.id);
+    const userCommentLikes = await prisma.commentLike.findMany({
+      where: { commentId: { in: commentIds }, userId: session.user.id },
+      select: { commentId: true },
+    });
+    const likedIds = new Set(userCommentLikes.map((l) => l.commentId));
+    commentsWithLikes.forEach((c) => { c.userLiked = likedIds.has(c.id); });
+  }
+
+  const date = post.createdAt;
+  const formattedDate = `${date.getFullYear()}·${String(date.getMonth() + 1).padStart(2, "0")}·${String(date.getDate()).padStart(2, "0")}`;
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      {/* 返回按钮 */}
+    <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
       <Link
         href="/posts"
-        className="text-sm text-gray-400 hover:text-warm-500 transition-colors mb-6 inline-block"
+        className="text-xs tracking-wider uppercase text-marble-500/60 hover:text-roman-red-700 transition-colors mb-6 inline-block"
       >
-        &larr; 返回心光记录
+        &larr; 文章
       </Link>
 
-      {/* 文章头部 */}
-      <article className="bg-white rounded-xl shadow-sm border border-warm-100 overflow-hidden">
+      <article className="card card-dark overflow-hidden">
         {/* 文章信息区 */}
-        <div className="p-8 pb-4 border-b border-warm-50">
-          <h1 className="text-3xl font-bold text-warm-800 mb-4">
+        <div className="p-4 md:p-8 pb-4 border-b border-stone-200/30">
+          <h1 className="font-serif text-2xl md:text-3xl font-bold text-marble-800 mb-4">
             {post.title}
           </h1>
-
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            {/* 作者信息（匿名则隐藏） */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-marble-500/60">
             <div className="flex items-center gap-2">
               {post.anonymous ? (
-                <span>某个温暖的人</span>
+                <span>匿名</span>
               ) : (
-                <span>{post.author.name || "匿名用户"}</span>
+                <span>{post.author.name || "匿名"}</span>
               )}
-              <span>·</span>
-              <time dateTime={post.createdAt.toISOString()}>
-                {post.createdAt.toLocaleDateString("zh-CN", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </time>
+              <span className="text-marble-400/40">|</span>
+              <time>{formattedDate}</time>
             </div>
-
-            {/* 温暖值 & 评论数 */}
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1 text-warm-500">
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                    clipRule="evenodd"
-                  />
+              <span className="flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                 </svg>
-                {post._count.likes} 温暖
+                {post._count.likes} 赞
               </span>
               <span className="flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                {post._count.comments} 评论
+                {post._count.comments} 回应
               </span>
             </div>
           </div>
         </div>
 
-        {/* 文章内容（Markdown 渲染） */}
-        <div className="p-8 prose prose-warm max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {post.content}
-          </ReactMarkdown>
-        </div>
+        <PostContentClient
+          postContent={post.content}
+          slug={params.slug}
+          initialLiked={userLiked}
+          initialLikeCount={post._count.likes}
+          initialComments={commentsWithLikes}
+        />
       </article>
 
-      {/* 点赞按钮插槽 */}
-      <div className="mt-6 bg-white rounded-xl shadow-sm border border-warm-100 p-6 text-center">
-        <p className="text-gray-400 text-sm">点赞功能将在后续开发</p>
+      <div className="mt-6">
+        <OnlineCounter />
       </div>
-
-      {/* 评论区插槽 */}
-      <section className="mt-6 bg-white rounded-xl shadow-sm border border-warm-100 p-8">
-        <h2 className="text-lg font-semibold text-warm-800 mb-4">
-          评论 ({post._count.comments})
-        </h2>
-        <p className="text-gray-400 text-sm text-center py-8">
-          评论区将在后续开发。
-        </p>
-      </section>
     </div>
   );
 }

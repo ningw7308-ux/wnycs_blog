@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import logger from "@/lib/logger";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -24,13 +25,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (!user || !user.password) {
+          logger.warn({ email }, "登录失败：用户不存在");
           return null;
         }
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
+          logger.warn({ email, userId: user.id }, "登录失败：密码错误");
           return null;
         }
+
+        logger.info({ userId: user.id, email }, "用户登录");
 
         return {
           id: user.id,

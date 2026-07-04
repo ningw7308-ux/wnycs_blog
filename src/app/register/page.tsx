@@ -73,7 +73,7 @@ export default function RegisterPage() {
     <div className="flex items-center justify-center min-h-[80vh] px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
         <h1 className="text-2xl font-bold text-center text-warm-800 mb-6">
-          注册温暖空间
+          注册为作者
         </h1>
 
         {error && (

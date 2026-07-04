@@ -1,40 +1,80 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { prisma } from "@/lib/prisma";
+import PostCard from "@/components/PostCard";
 
-export default function HomePage() {
+const QUOTES = [
+  "爱其总体，也爱每一粒恒河之沙。",
+  "在你之后，我之后，有什么能跨越时间和空间的界限，成为永恒？",
+  "小片夕阳落在我手里。",
+  "only pasionately curious",
+  "梨花的瓣子是月亮做的。",
+];
+
+export default async function HomePage() {
+  const posts = await prisma.post.findMany({
+    where: { published: true },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: {
+      author: { select: { name: true } },
+      _count: { select: { likes: true } },
+    },
+  });
+
+  const serializedPosts = posts.map((post) => ({
+    ...post,
+    createdAt: post.createdAt.toISOString().slice(0, 10),
+  }));
+
+  const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-5xl md:text-6xl font-bold text-warm-800 mb-4">
-          欢迎来到温暖空间
-        </h1>
-        <p className="text-xl text-gray-600 mb-10 max-w-lg mx-auto">
-          一个温暖的心理互助社区，在这里分享你的故事，感受彼此的温度。
-        </p>
-        <Link
-          href="/posts"
-          className="inline-block bg-warm-500 hover:bg-warm-600 text-white text-lg font-medium px-8 py-3 rounded-full transition-colors shadow-lg hover:shadow-xl"
-        >
-          进入记录
-        </Link>
-      </motion.div>
+    <div className="max-w-3xl mx-auto px-4 py-16 md:py-24">
+      {/* 博主一句话 */}
+      <h1 className="font-serif text-3xl md:text-4xl font-bold text-marble-800 mb-3 tracking-wide">
+        To Adapt and Thrive amid Uncertainty
+      </h1>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="mt-16 text-gray-400 text-sm"
-      >
-        <p className="italic">
-          &ldquo;万物皆有裂痕，那是光照进来的地方。&rdquo; —— 莱昂纳德·科恩
-        </p>
-      </motion.div>
+      {/* 引言 — 随机展示 */}
+      <p className="font-serif text-lg text-marble-600/70 italic mb-16 border-l-2 border-roman-red-700 pl-4">
+        &ldquo;{randomQuote}&rdquo;
+      </p>
+
+      {/* 最新文章 */}
+      <section>
+        <h2 className="font-serif text-xl font-semibold text-marble-800 mb-8 tracking-wide">
+          最近文章
+        </h2>
+
+        {serializedPosts.length > 0 ? (
+          <div className="space-y-5">
+            {serializedPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                title={post.title}
+                excerpt={post.excerpt || ""}
+                author={post.author.name || "匿名"}
+                createdAt={post.createdAt}
+                likeCount={post._count.likes}
+                slug={post.slug}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-marble-500/60 text-sm">还没有文章。</p>
+        )}
+
+        {posts.length > 0 && (
+          <div className="mt-8">
+            <Link
+              href="/posts"
+              className="text-xs tracking-widest uppercase text-marble-500/60 hover:text-roman-red-700 transition-colors"
+            >
+              查看全部文章 &rarr;
+            </Link>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

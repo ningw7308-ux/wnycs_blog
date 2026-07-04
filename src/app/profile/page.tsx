@@ -70,7 +70,7 @@ export default async function ProfilePage() {
           {user?.bio ? (
             <p className="text-gray-600 text-sm">{user.bio}</p>
           ) : (
-            <p className="text-gray-300 text-sm italic">这个人很温暖，还没有写简介</p>
+            <p className="text-gray-300 text-sm italic">这个人很安静，还没有写简介</p>
           )}
         </div>
       </div>
@@ -89,7 +89,7 @@ export default async function ProfilePage() {
                 slug={post.slug}
                 title={post.title}
                 excerpt={post.excerpt}
-                author={post.anonymous ? "某个温暖的人" : (user?.name || "匿名用户")}
+                author={post.anonymous ? "匿名" : (user?.name || "匿名用户")}
                 createdAt={post.createdAt.toISOString().slice(0, 10)}
                 likeCount={post._count.likes}
               />

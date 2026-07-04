@@ -60,7 +60,6 @@ export default function NewPostPage() {
       }
 
       const post = await res.json();
-      // 成功后跳转到文章详情页
       router.push(`/posts/${post.slug}`);
     } catch {
       setServerError("网络错误，请稍后重试");
@@ -68,10 +67,10 @@ export default function NewPostPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-warm-800 mb-2">写新文章</h1>
-      <p className="text-gray-500 mb-8">
-        记录下你的感受与思考，分享温暖给更多人。
+    <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
+      <h1 className="text-2xl md:text-3xl font-bold text-warm-800 mb-2">写新文章</h1>
+      <p className="text-gray-500 text-sm md:text-base mb-8">
+        记录下你的感受与思考。
       </p>
 
       {/* 服务端错误提示 */}
@@ -83,7 +82,7 @@ export default function NewPostPage() {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white rounded-xl shadow-sm border border-warm-100 p-8 space-y-6"
+        className="bg-white rounded-xl shadow-sm border border-warm-100 p-4 md:p-8 space-y-6"
       >
         {/* 标题 */}
         <div>
@@ -93,8 +92,8 @@ export default function NewPostPage() {
           <input
             type="text"
             {...register("title")}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-warm-400 focus:border-transparent"
-            placeholder="给你的文章起一个温暖的标题..."
+            className="w-full px-4 py-2.5 md:py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-warm-400 focus:border-transparent"
+            placeholder="给你的文章起一个标题..."
           />
           {errors.title && (
             <p className="text-red-400 text-xs mt-1">{errors.title.message}</p>
@@ -133,15 +132,15 @@ export default function NewPostPage() {
             匿名发布
           </label>
           <p className="text-xs text-gray-400 mt-1 ml-6">
-            勾选后，文章将不显示你的真实姓名，改为显示"某个温暖的人"。
+            勾选后，文章将不显示你的真实姓名，改为显示&ldquo;匿名&rdquo;。
           </p>
         </div>
 
-        {/* 提交按钮 */}
+        {/* 提交按钮：移动端至少 44px 高度 */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-warm-500 hover:bg-warm-600 disabled:bg-warm-300 text-white font-medium py-2.5 rounded-lg transition-colors"
+          className="w-full bg-warm-500 hover:bg-warm-600 disabled:bg-warm-300 text-white font-medium py-3 min-h-[44px] rounded-lg transition-colors"
         >
           {isSubmitting ? "发布中..." : "发布文章"}
         </button>

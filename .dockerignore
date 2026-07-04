@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env
+.env.local
+.env.*.local
+logs
+*.log
+Dockerfile
+docker-compose.yml
+.dockerignore
+dev.db
+dev.db-journal

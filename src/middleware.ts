@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
@@ -10,7 +12,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // 需要登录才能访问的路由
-  const protectedPaths = ["/profile", "/new-post"];
+  const protectedPaths = ["/profile", "/new-post", "/settings"];
   const isProtectedRoute = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(path + "/")
   );

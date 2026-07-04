@@ -1,31 +1,36 @@
 import type { Metadata } from "next";
+import { Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import DeskPet from "@/components/DeskPet";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "温暖空间 - 心理互助博客平台",
-  description: "一个温暖的心理互助社区，分享治愈故事与心灵感悟",
+  title: "仰春氏 · 思考与构建",
+  description: "To Adapt and Thrive amid Uncertainty",
 };
 
-/**
- * 根布局
- * Providers 包裹全站，使所有客户端组件都能通过 useSession 获取登录状态。
- * 结构：导航栏 → 主内容 → 页脚
- */
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
-      <body className="min-h-screen flex flex-col">
+    <html lang="zh-CN" className={cormorant.variable}>
+      <body className="min-h-screen flex flex-col font-sans antialiased">
         <Providers>
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <DeskPet />
         </Providers>
       </body>
     </html>

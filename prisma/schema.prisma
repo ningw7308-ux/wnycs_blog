@@ -15,9 +15,11 @@ model User {
   image     String?
   bio       String?
   createdAt DateTime  @default(now())
-  posts     Post[]
-  comments  Comment[]
-  likes     Like[]
+  posts        Post[]
+  comments     Comment[]
+  likes        Like[]
+  commentLikes CommentLike[]
+  wallMessages WallMessage[]
 }
 
 model Post {
@@ -36,13 +38,14 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id           String        @id @default(cuid())
+  content      String
+  postId       String
+  post         Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentLikes CommentLike[]
+  createdAt    DateTime      @default(now())
 }
 
 model Like {
@@ -54,6 +57,25 @@ model Like {
   createdAt DateTime @default(now())
 
   @@unique([postId, userId])
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, userId])
+}
+
+model WallMessage {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Quote {

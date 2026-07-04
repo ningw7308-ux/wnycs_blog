@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { generateSlug, extractExcerpt } from "@/lib/utils";
+import logger from "@/lib/logger";
 
 /**
  * POST /api/posts
@@ -46,9 +47,11 @@ export async function POST(request: Request) {
       },
     });
 
+    logger.info({ userId: session.user.id, postId: post.id, slug }, "文章创建");
+
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
-    console.error("创建文章失败:", error);
+    logger.error({ err: error }, "创建文章失败");
     return NextResponse.json({ error: "创建文章失败" }, { status: 500 });
   }
 }

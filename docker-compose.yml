@@ -1,0 +1,39 @@
+services:
+  # ─── Next.js 应用 ───
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: warmspace-app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://warmspace:warmspace@db:5432/warmspace}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-warmspace-docker-secret}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── PostgreSQL 数据库 ───
+  db:
+    image: postgres:16-alpine
+    container_name: warmspace-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=warmspace
+      - POSTGRES_PASSWORD=warmspace
+      - POSTGRES_DB=warmspace
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U warmspace -d warmspace"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
